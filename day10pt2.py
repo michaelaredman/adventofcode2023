@@ -1,42 +1,5 @@
 from collections import deque
 
-example = """-L|F7
-7S-7|
-L|7||
--L-J|
-L|-JF"""
-
-example2 = """FF7FSF7F7F7F7F7F---7
-L|LJ||||||||||||F--J
-FL-7LJLJ||||||LJL-77
-F--JF--7||LJLJ7F7FJ-
-L---JF-JLJ.||-FJLJJ7
-|F|F-JF---7F7-L7L|7|
-|FFJF7L7F-JF7|JL---7
-7-L-JL7||F7|L7F-7F7|
-L.L7LFJ|||||FJL7||LJ
-L7JLJL-JLJLJL--JLJ.L"""
-
-example3 = """.F----7F7F7F7F-7....
-.|F--7||||||||FJ....
-.||.FJ||||||||L7....
-FJL7L7LJLJ||LJ.L-7..
-L--J.L7...LJS7F-7L7.
-....F-J..F7FJ|L7L7L7
-....L7.F7||L7|.L7L7|
-.....|FJLJ|FJ|F7|.LJ
-....FJL-7.||.||||...
-....L---J.LJ.LJLJ..."""
-
-example4 = """...........
-.S-------7.
-.|F-----7|.
-.||.....||.
-.||.....||.
-.|L-7.F-J|.
-.|..|.|..|.
-.L--J.L--J.
-..........."""
 
 pipe_dirs = {
     '-': [(0, -1), (0, 1)],
@@ -88,50 +51,6 @@ def find_loop(grid: list[list[str]]):
                 seen.append(pos)
 
 
-# def flood_fill(point: list[int, int],
-#                grid: list[list[str]],
-#                loop: list[list[int, int]]):
-#     n_row, n_col = len(grid), len(grid[0])
-#     seen = []
-#     seen.append(point)
-#     dirs = [[-1, 0], [1, 0], [0, 1], [0, -1]]
-#     q = deque()
-#     q.append(point)
-#     while len(q):
-#         p = q.pop()
-#         for dir in dirs:
-#             new_p = [p[0] + dir[0], p[1] + dir[1]]
-#             # oob or in loop or seen then dont add to queue
-#             if new_p in loop or new_p in seen \
-#                     or not (0 <= new_p[0] < n_row and 0 <= new_p[1] < n_col):
-#                 continue
-#             seen.append(new_p)
-#             q.append(new_p)
-#     return seen
-
-
-# def count_inside(grid: list[list[str]], loop: list[list[str, str]]):
-#     n_row, n_col = len(grid), len(grid[0])
-#     outside = {}
-
-#     outside = flood_fill([0, 0], grid, loop)
-
-#     count = 0
-#     for row in range(n_row):
-#         for col in range(n_col):
-#             if [row, col] not in outside and [row, col] not in loop \
-#                     and grid[row][col] == '.':
-#                 count += 1
-#     return count
-
-# print(find_farthest(create_grid(example)))
-
-
-# with open('inputs/day10', 'r') as f:
-#     s = f.read()
-#     loop = find_loop(create_grid(s))
-#     print(count_inside(create_grid(s), loop))
-
 def print_grid(grid, loop):
     warn = '\033[93m'
     endw = '\033[0m'
@@ -171,11 +90,3 @@ def solve(s):
 with open('inputs/day10', 'r') as f:
     s = f.read()
     print(solve(s))
-
-
-# print('='*40)
-# print(solve(example2))
-# print('='*40)
-# print(solve(example3))
-# print('='*40)
-# print(solve(example4))
