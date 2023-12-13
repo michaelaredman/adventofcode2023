@@ -1,43 +1,8 @@
-# use dp – 3D?
-# d[col][group][H] = number of ways to the Hth hash of a group at position col
-# note G goes from 0 ... hash_length
-
-example = """???.### 1,1,3
-.??..??...?##. 1,1,3
-?#?#?#?#?#?#?#? 1,3,1,6
-????.#...#... 4,1,1
-????.######..#####. 1,6,5
-?###???????? 3,2,1"""
-
-#
-# dp[col][group][H] =
-
-
-# if line[col] == '.'
-#     dp[col][group][H] = 0 for H > 0
-#     dp[col][group][0] = dp[col-1][group-1][H_max] + dp[col-1][group][0]
-#                          only if group > 0
-# if dp[col-1][group][H] > 0 then dp[col][group][H] =
-
-# elif line[col] == '#'
-#      dp[col][group][0] = 0
-#      dp[col][group][H] = dp[col-1][group][H-1] for H < H_max
-
-# elif line[col] == '?'
-#     dp[col][group][0] = dp[col-1][group-1][H_max] + dp[col-1][group][0]
-#     dp[col][group][H] = dp[col-1][group][H - 1]
-# if dp[col-1][group][H] > 0 then dp[col][group][H] =
-
-# return dp[col]
-
 def line_to_input(line: str):
     row, groups = line.split()
     row = [c for c in row]
     groups = [int(x) for x in groups.split(',')]
     return row, groups
-
-
-print(line_to_input(example.splitlines()[0]))
 
 
 def count_ways(line: str, groups: list[int]):
@@ -75,10 +40,6 @@ def count_ways(line: str, groups: list[int]):
                     dp[c][-1][-1] = dp[c][-1][-1] + dp[c-1][-1][-1]
             case _:
                 assert False
-    # for spring in range(n_springs):
-    #     for group in range(n_groups):
-    #         print(f"{dp[spring][group]=}")
-    #     print('='*30)
     return dp[-1][-1][-1]
 
 
