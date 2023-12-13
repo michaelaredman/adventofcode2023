@@ -85,3 +85,15 @@ print(total_winnings(example))
 with open('inputs/day7', 'r') as f:
     s = f.read()
     print(total_winnings(s))
+
+
+def print_grid(grid, loop):
+    warn = '\033[93m'
+    endw = '\033[0m'
+    for row in len(grid):
+        for col in len(grid[0]):
+            if [row, col] in loop:
+                print(f"{warn}{grid[row][col]}{endw}", end='')
+            else:
+                print(f"{grid[row][col]}", end='')
+        print()
