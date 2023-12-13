@@ -28,6 +28,16 @@ L--J.L7...LJS7F-7L7.
 ....FJL-7.||.||||...
 ....L---J.LJ.LJLJ..."""
 
+example4 = """...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+..........."""
+
 pipe_dirs = {
     '-': [(0, -1), (0, 1)],
     '|': [(-1, 0), (1, 0)],
@@ -38,11 +48,6 @@ pipe_dirs = {
     '.': [],
     'S': [(-1, 0), (1, 0), (0, -1), (0, 1)]}
 
-# for all directions around S
-#     follow the pipes
-#     if we return to S then we have our path
-#     remeber to save the sequence of locations we find on our path
-
 
 def create_grid(raw_string: str):
     grid = []
@@ -51,17 +56,15 @@ def create_grid(raw_string: str):
     return grid
 
 
-def dfs(pos: tuple[int, int], grid: list[list[str]]):
-    pass
-
-
-def find_loop(grid: list[list[str]]) -> list[tuple[int, int]]:
+def find_loop(grid: list[list[str]]):
     n_rows, n_cols = len(grid), len(grid[0])
     for row, col in [[r, c] for r in range(n_rows) for c in range(n_cols)]:
         if grid[row][col] == 'S':
             S = [row, col]
+            break
 
     for new_dir in pipe_dirs['S']:
+        out_dir = new_dir
         seen = [S]
         pos = S
         while True:
@@ -74,7 +77,9 @@ def find_loop(grid: list[list[str]]) -> list[tuple[int, int]]:
                 break
             if pos in seen:
                 if pos == S:
-                    return seen
+                    out_dir2 = (-new_dir[0], -new_dir[1])
+                    grid[S[0]][S[1]] = find_S_type(out_dir, out_dir2)
+                    return [seen, grid]
                 else:
                     break
             else:
@@ -83,41 +88,41 @@ def find_loop(grid: list[list[str]]) -> list[tuple[int, int]]:
                 seen.append(pos)
 
 
-def flood_fill(point: list[int, int],
-               grid: list[list[str]],
-               loop: list[list[int, int]]):
-    n_row, n_col = len(grid), len(grid[0])
-    seen = []
-    seen.append(point)
-    dirs = [[-1, 0], [1, 0], [0, 1], [0, -1]]
-    q = deque()
-    q.append(point)
-    while len(q):
-        p = q.pop()
-        for dir in dirs:
-            new_p = [p[0] + dir[0], p[1] + dir[1]]
-            # oob or in loop or seen then dont add to queue
-            if new_p in loop or new_p in seen \
-                    or not (0 <= new_p[0] < n_row and 0 <= new_p[1] < n_col):
-                continue
-            seen.append(new_p)
-            q.append(new_p)
-    return seen
+# def flood_fill(point: list[int, int],
+#                grid: list[list[str]],
+#                loop: list[list[int, int]]):
+#     n_row, n_col = len(grid), len(grid[0])
+#     seen = []
+#     seen.append(point)
+#     dirs = [[-1, 0], [1, 0], [0, 1], [0, -1]]
+#     q = deque()
+#     q.append(point)
+#     while len(q):
+#         p = q.pop()
+#         for dir in dirs:
+#             new_p = [p[0] + dir[0], p[1] + dir[1]]
+#             # oob or in loop or seen then dont add to queue
+#             if new_p in loop or new_p in seen \
+#                     or not (0 <= new_p[0] < n_row and 0 <= new_p[1] < n_col):
+#                 continue
+#             seen.append(new_p)
+#             q.append(new_p)
+#     return seen
 
 
-def count_inside(grid: list[list[str]], loop: list[list[str, str]]):
-    n_row, n_col = len(grid), len(grid[0])
-    outside = {}
+# def count_inside(grid: list[list[str]], loop: list[list[str, str]]):
+#     n_row, n_col = len(grid), len(grid[0])
+#     outside = {}
 
-    outside = flood_fill([0, 0], grid, loop)
+#     outside = flood_fill([0, 0], grid, loop)
 
-    count = 0
-    for row in range(n_row):
-        for col in range(n_col):
-            if [row, col] not in outside and [row, col] not in loop \
-                    and grid[row][col] == '.':
-                count += 1
-    return count
+#     count = 0
+#     for row in range(n_row):
+#         for col in range(n_col):
+#             if [row, col] not in outside and [row, col] not in loop \
+#                     and grid[row][col] == '.':
+#                 count += 1
+#     return count
 
 # print(find_farthest(create_grid(example)))
 
@@ -126,10 +131,6 @@ def count_inside(grid: list[list[str]], loop: list[list[str, str]]):
 #     s = f.read()
 #     loop = find_loop(create_grid(s))
 #     print(count_inside(create_grid(s), loop))
-
-loop = find_loop(create_grid(example3))
-print(count_inside(create_grid(example3), loop))
-
 
 def print_grid(grid, loop):
     warn = '\033[93m'
@@ -143,4 +144,38 @@ def print_grid(grid, loop):
         print()
 
 
-print_grid(create_grid(example3), find_loop(create_grid(example3)))
+def find_S_type(od1, od2):
+    for key in pipe_dirs.keys():
+        if key != 'S':
+            if od1 in pipe_dirs[key] and od2 in pipe_dirs[key]:
+                return key
+
+
+def solve(s):
+    grid = create_grid(s)
+    n_row, n_col = len(grid), len(grid[0])
+    loop, grid = find_loop(grid)
+    count = 0
+    for r in range(n_row):
+        crossings = 0
+        for c in range(n_col):
+            if [r, c] in loop:
+                if grid[r][c] in ['|', 'L', 'J']:
+                    crossings += 1
+            else:
+                if crossings % 2 == 1:
+                    count += 1
+    return count
+
+
+with open('inputs/day10', 'r') as f:
+    s = f.read()
+    print(solve(s))
+
+
+# print('='*40)
+# print(solve(example2))
+# print('='*40)
+# print(solve(example3))
+# print('='*40)
+# print(solve(example4))
