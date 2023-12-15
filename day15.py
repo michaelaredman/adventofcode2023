@@ -1,5 +1,5 @@
 import re
-part1 = False
+part1 = True
 part2 = True
 
 
@@ -19,12 +19,11 @@ if part1:
         values = string.split(sep=',')
         total = 0
         for value in values:
-            print(value)
             total += hash(value)
-        print(total)
+        print(f"{total=}")
 
 
-def solve(s: str):
+def solve(s: str) -> list[dict[str, int]]:
     instructions = s.split(',')
     lenses = [dict() for _ in range(256)]
     for ins in instructions:
@@ -38,7 +37,7 @@ def solve(s: str):
     return lenses
 
 
-def focusing_power(boxes: list[dict[str, int]]):
+def focusing_power(boxes: list[dict[str, int]]) -> int:
     total = 0
     for bn, box in enumerate(boxes):
         for slot, lens in enumerate(box):
