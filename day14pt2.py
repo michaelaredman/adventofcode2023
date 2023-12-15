@@ -133,12 +133,10 @@ def cycle(grid: list[list[str]]) -> list[list[str]]:
 
 
 def g2h(grid: list[list[str]]):
-    grid_h = tuple(tuple(row) for row in grid)
-    return grid_h
+    return tuple(tuple(row) for row in grid)
 
 #  3 4 6 7 1 2 3 [1] 2 3 1 2 3
 # 13 total, n = 12
-#
 
 
 def cycles(grid: list[list[str]], n: int, track: bool = False) -> list[list[str]]:
