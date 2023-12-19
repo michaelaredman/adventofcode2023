@@ -81,11 +81,9 @@ example = """2413432311323
 2546548887735
 4322674655533"""
 
-g = [[int(x) for x in line] for line in example.splitlines()]
-for line in g:
-    print(line)
+# g = [[int(x) for x in line] for line in example.splitlines()]
 
-print(min_heat(dijkstras(g, construct_graph(g))))
+# print(min_heat(dijkstras(g, construct_graph(g))))
 
 with open('inputs/day17', 'r') as f:
     s = f.read()
