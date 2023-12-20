@@ -99,7 +99,7 @@ Ae = solve(example)
 c = 0
 for ae in Ae:
     c += sum(ae)
-print("Example:", c)
+print("Part 1 example:", c)
 
 with open('inputs/day19', 'r') as f:
     s = f.read()
