@@ -64,12 +64,12 @@ from math import inf
 # -> S positions are an even number away so we can ignore them!
 
 
-def subsquares_reachable(steps: int, odd):
+def subsquares_reachable(steps: int, first):
     # if odd then return the squares, if even then return the oblong numbers
-    if odd:
+    if first:
         return (steps + 1) * (steps + 1)
     else:
-        return ((steps) * (steps + 1)) // 2
+        return ((steps) * (steps + 1))
 
 # sum(count[:(k+1)]) is the total number of these identical pattern and corners reachable from the zeroth case of this pattern
 # in k steps
@@ -177,32 +177,56 @@ def solve(grid: list[list[str]]):
         for corner in range(4):
             distances = D[subsquare][corner]
             n_row, n_col = len(distances), len(distances[0])
+            # loop through distancess follows:
+            # for corner 0: include full range
+            # for 1 and 2: include anticlockwise edge
+            # for 3: inclulde only the enclosed region
             for row in range(n_row):
                 for col in range(n_col):
                     if distances[row][col] != inf:
-                        if distances[row][col] % 2 == 1:
-                            total_reachable += subsquares_reachable(
-                                num_steps(corner, distances[row][col], total_steps, side_length), True)
+                        ns = num_steps(
+                            corner, distances[row][col], total_steps, full_length)
+                        if ns % 2 == 0:
+                            first, second = ns//2, ns//2
                         else:
-                            total_reachable += subsquares_reachable(
-                                num_steps(corner, distances[row][col], total_steps, side_length), False)
+                            first, second = 1 + ns//2, ns//2
+                        if corner in [0, 2, 3]:
+                            # take evens first
+                            if distances[row][col] == 0:
+                                total_reachable += subsquares_reachable(
+                                    first, True)
+                            else:
+                                total_reachable += subsquares_reachable(
+                                    second, False)
+                        else:
+                            # take odds first
+                            if distances[row][col] == 1:
+                                total_reachable += subsquares_reachable(
+                                    first, True)
+                            else:
+                                total_reachable += subsquares_reachable(
+                                    second, False)
+    total_reachable += 4 * (total_steps // full_length) * \
+        (1 + (total_steps // full_length))
     return total_reachable
 
+# true = 622926941971282
 
-def num_steps(x: int, point_offset: int, total_steps: int, side_length: int):
+
+def num_steps(x: int, point_offset: int, total_steps: int, full_length: int):
     match x:
         # pattern D: top right for 1
         case 0:
-            return (total_steps - point_offset - side_length * 2) // (side_length * 2)
+            return (total_steps - point_offset - full_length) // (full_length)
         # pattern C: top left for 1
         case 1:
-            return (total_steps - point_offset - side_length) // (side_length * 2)
+            return (total_steps - point_offset - full_length//2) // (full_length)
         # pattern A: bottom left for 1
         case 2:
-            return (total_steps - point_offset) // (side_length * 2)
+            return (total_steps - point_offset) // (full_length)
         # pattern B: bottom right for 1
         case 3:
-            return (total_steps - point_offset - side_length) // (side_length * 2)
+            return (total_steps - point_offset - full_length//2 - 1) // (full_length)
         case _:
             assert False
 
