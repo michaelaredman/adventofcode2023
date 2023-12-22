@@ -49,9 +49,6 @@ from math import inf
 #
 
 
-total_steps = 26_501_365
-side_length = 66
-
 # count[i] = number of subsquares of a given pattern and corner reachable in i (side_length*2) steps
 # these are ust triangle numbers! e.g. for those lower-left 1s reachable by four steps from the origin
 # 4
@@ -67,9 +64,12 @@ side_length = 66
 # -> S positions are an even number away so we can ignore them!
 
 
-def subsquares_reachable(steps: int):
-    steps += 1
-    return ((steps) * (steps + 1)) // 2
+def subsquares_reachable(steps: int, odd):
+    # if odd then return the squares, if even then return the oblong numbers
+    if odd:
+        return (steps + 1) * (steps + 1)
+    else:
+        return ((steps) * (steps + 1)) // 2
 
 # sum(count[:(k+1)]) is the total number of these identical pattern and corners reachable from the zeroth case of this pattern
 # in k steps
@@ -85,13 +85,13 @@ def subsquares_reachable(steps: int):
 # top right (1)
 # row range = 0 -> S[0] - 1
 # col range = S[1] -> n_col - 1
-# top left
+# top left (2)
 # row range = 0 -> S[0]
 # col range = 0 -> S[1] - 1
-# bottom left
+# bottom left (3)
 # row range = S[0] + 1 -> n_row - 1
 # col range = 0 -> S[1]
-# bottom right
+# bottom right (4)
 # row range = S[0] -> n_row - 1
 # col range = S[1] + 1 -> n_col - 1
 
@@ -104,10 +104,10 @@ def bfs(grid: list[list[str]],
                for _ in range(r_min, r_max+1)]
     Q = deque()
     distance = [[inf for _ in range(c_min, c_max+1)]
-                for _ in range(c_min, c_max+1)]
+                for _ in range(r_min, r_max+1)]
     Q.appendleft((start, 1))
-    visited[start[0]][start[1]] = True
-    distance[start[0]][start[1]] = 1
+    visited[start[0] - r_min][start[1] - c_min] = True
+    distance[start[0] - r_min][start[1] - c_min] = 1
     dirs = ((0, 1), (0, -1), (1, 0), (-1, 0))
     while Q:
         p, dist = Q.pop()
@@ -115,8 +115,99 @@ def bfs(grid: list[list[str]],
             p_new = (p[0] + d[0], p[1] + d[1])
             if not (r_min <= p_new[0] <= r_max and c_min <= p_new[1] <= c_max):
                 continue
-            if not visited[p_new[0]][p_new[1]] and grid[p_new[0]][p_new[1]] == '.':
+            if not visited[p_new[0] - r_min][p_new[1] - c_min] and grid[p_new[0]][p_new[1]] == '.':
                 Q.appendleft((p_new, dist+1))
-                distance[p_new[0]][p_new[1]] = dist+1
-                visited[p_new[0]][p_new[1]] = True
+                distance[p_new[0] - r_min][p_new[1] - c_min] = dist+1
+                visited[p_new[0] - r_min][p_new[1] - c_min] = True
     return distance
+
+
+def find_S(grid: list[list[str]]) -> tuple[int, int]:
+    n_row, n_col = len(grid), len(grid[0])
+    for r in range(n_row):
+        for c in range(n_col):
+            if grid[r][c] == 'S':
+                return (r, c)
+    assert False
+
+
+def print_matrix(grid):
+    warn = '33[93m'
+    endw = '33[0m'
+    blue = '33[94m'
+    cyan = '33[96m'
+    green = '33[92m'
+    fail = '33[91m'
+    bold = '33[1m'
+    underline = '33[4m'
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            print(f"{grid[row][col]} ", end='')
+        print()
+
+
+def solve(grid: list[list[str]]):
+    total_steps = 26_501_365
+    n_row, n_col = len(grid), len(grid[0])
+    side_length = (n_row + 1) // 2
+    full_length = n_row
+    S = find_S(grid)
+    bounds_list = [(0, S[0] - 1, S[1], n_col - 1),
+                   (0, S[0], 0, S[1] - 1),
+                   (S[0] + 1, n_row - 1, 0, S[1]),
+                   (S[0], n_row - 1, S[1] + 1, n_col - 1)]
+    corners_list = [[(0, n_col - 1), (0, S[1]),
+                     (S[0] - 1, S[1]), (S[0] - 1, n_col - 1)],  # TR, TL, BL, BR
+                    [(0, 0), (S[0], 0),
+                     (S[0], S[1] - 1), (0, S[1] - 1)],  # TL, BL, BR, TR
+                    [(n_row - 1, 0), (n_row - 1, S[1]),
+                     (S[0] + 1, S[1]), (S[0] + 1, 0)],  # BL, BR, TR, TL
+                    [(n_row - 1, n_col - 1), (S[0], n_col - 1),
+                     (S[0], S[1] + 1), (n_row - 1, S[1] + 1)]  #  BR, TR, TL, BL
+                    ]
+    # distance for a subsquare from a given corner: D[subsquare][corner][r][c]
+    D = []
+    for i, bounds in enumerate(bounds_list):
+        D_i = []
+        for corner in corners_list[i]:
+            D_i.append(bfs(grid, *bounds, corner))
+        D.append(D_i)
+    total_reachable = 0
+    for subsquare in range(4):
+        for corner in range(4):
+            distances = D[subsquare][corner]
+            n_row, n_col = len(distances), len(distances[0])
+            for row in range(n_row):
+                for col in range(n_col):
+                    if distances[row][col] != inf:
+                        if distances[row][col] % 2 == 1:
+                            total_reachable += subsquares_reachable(
+                                num_steps(corner, distances[row][col], total_steps, side_length), True)
+                        else:
+                            total_reachable += subsquares_reachable(
+                                num_steps(corner, distances[row][col], total_steps, side_length), False)
+    return total_reachable
+
+
+def num_steps(x: int, point_offset: int, total_steps: int, side_length: int):
+    match x:
+        # pattern D: top right for 1
+        case 0:
+            return (total_steps - point_offset - side_length * 2) // (side_length * 2)
+        # pattern C: top left for 1
+        case 1:
+            return (total_steps - point_offset - side_length) // (side_length * 2)
+        # pattern A: bottom left for 1
+        case 2:
+            return (total_steps - point_offset) // (side_length * 2)
+        # pattern B: bottom right for 1
+        case 3:
+            return (total_steps - point_offset - side_length) // (side_length * 2)
+        case _:
+            assert False
+
+
+with open('inputs/day21', 'r') as f:
+    s = f.read()
+    grid = [[c for c in line] for line in s.splitlines()]
+    print(solve(grid))
