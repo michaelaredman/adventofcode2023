@@ -79,9 +79,7 @@ class Conjunction(Module):
             self.send_pulse(Pulse(pulse.dest, d, out_strength), pulse_queue)
 
 
-global presses
 presses = 0
-global ps
 ps = 0
 
 
@@ -91,7 +89,6 @@ class System():
     modules = defaultdict(Module)
     output = []
     low_pulses, high_pulses = 0, 0
-    state = set()
 
     def __init__(self, input_str: str):
         for line in input_str.splitlines():
@@ -118,10 +115,11 @@ class System():
                     self.modules[d].init_state(m)
 
     def press_button(self):
-        global presses
-        presses += 1
-        global ps
-        ps = 0
+        if part2:
+            global presses
+            presses += 1
+            global ps
+            ps = 0
         pulse = self.button_queue.pop()
         self.track_pulse(pulse)
         self.modules['broadcaster'].receive_pulse(pulse, self.pulse_queue)
@@ -132,8 +130,6 @@ class System():
         if pulse.dest in self.modules:
             self.modules[pulse.dest].receive_pulse(pulse, self.pulse_queue)
         else:
-            if pulse.dest == 'rx' and pulse.strength == PulseStrength.LOW:
-                pass
             self.output.append(pulse)
 
     def queue_button_press(self, n: int):
@@ -143,8 +139,9 @@ class System():
 
     def track_pulse(self, pulse: Pulse):
         print_pulses = False
-        global ps
-        ps += 1
+        if part2:
+            global ps
+            ps += 1
         if pulse.strength == PulseStrength.LOW:
             self.low_pulses += 1
         else:
@@ -165,7 +162,7 @@ with open('inputs/day20', 'r') as f:
     s = f.read()
     system = System(s)
     print(system)
-    system.queue_button_press(100000)
+    system.queue_button_press(1000)
     system()
     print(system.low_pulses)
     print(system.high_pulses)
